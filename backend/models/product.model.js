@@ -23,6 +23,11 @@ const productSchema=new mongoose.Schema({
 
 },{collection:"Product",timestamps:true})
 
+productSchema.virtual('id').get(function(){
+    return this._id.toHexString();
+})
+
+productSchema.set('toJSON',{virtuals:true})
 
 const Product=new mongoose.model("Product",productSchema)
 
