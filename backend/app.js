@@ -12,6 +12,7 @@ const apiUrl=process.env.API_URL
 const productRouter=require("./routers/productRouter")
 const categoryRouter=require("./routers/categoryRouter")
 const userRouter=require("./routers/userRouter")
+const orderRouter=require("./routers/orderRouter")
 const errorHandler=require("./helpers/errorHandler")
 const authJwt=require("./middlewares/authJwt")
 
@@ -30,6 +31,7 @@ app.get("/",(req,res)=>{
 app.use(`${apiUrl}/product`,productRouter)
 app.use(`${apiUrl}/category`,categoryRouter)
 app.use(`${apiUrl}/user`,userRouter)
+app.use(`${apiUrl}/order`,orderRouter)
 
 app.use(errorHandler)
 
