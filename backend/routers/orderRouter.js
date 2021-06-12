@@ -1,11 +1,12 @@
 const router=require("express").Router()
 const OrderItem=require("../models/order.item.model")
 const Order=require("../models/order.model")
-
+const Product=require("../models/product.model")
 
 router.post("/",async (req,res)=>{
     let orderItems=req.body.orderItems;
     let orderItemIds=[]
+    const totalPrice=0;
     try {
        
     orderItems.forEach(async (item) => {
@@ -16,6 +17,11 @@ router.post("/",async (req,res)=>{
                 orderItemIds.push(orderItem._id);
                  await orderItem.save()         
      });
+
+     orderItems.foreach(async (orderItem)=>{
+     const product= await Product.findById(orderItem.product)
+     totalPrice+=product.price*orderItem.quantity
+     })
   
         const order = new Order({
             orderItems:orderItemIds,
@@ -26,7 +32,7 @@ router.post("/",async (req,res)=>{
             country:req.body.country,
             phone:req.body.phone,
             status:req.body.status,
-            totalPrice:req.body.totalPrice,
+            totalPrice:totalPrice,
             user:req.body.user,
         })
 
@@ -73,6 +79,24 @@ router.get("/",async (req,res)=>{
             success:false
         })
     }
+})
+
+router.get("/get/count",async (req,res)=>{
+    try {
+        const orderCount=await Order.countDocuments((count)=>count)
+        res.status(200).send({
+            status:200,
+            success:true,
+            orderCount:orderCount
+        })
+    } catch (error) {
+        res.status(500).send({
+            status:500,
+            success:false,
+            error:error
+        })
+    }
+    
 })
 
 router.get("/:id",async (req,res)=>{
@@ -128,7 +152,7 @@ router.put("/:id",async(req,res)=>{
   
     
 })
-router.delete("/:id",(req,res)=>{
+router.delete("/:id",async (req,res)=>{
     try {
         const oldOrder=await Order.findByIdAndRemove(req.params.id)
         if(!oldOrder){
@@ -138,6 +162,9 @@ router.delete("/:id",(req,res)=>{
                 status:404
             })
         }else{
+            oldOrder.orderItems.forEach(async (item)=>{
+            await OrderItem.findByIdAndRemove(item._id)
+            })
             res.status(201).send({
                 data:oldOrder,
                 success:true,
